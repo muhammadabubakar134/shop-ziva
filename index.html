@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="asseste/css/style.css">
+    <link rel="stylesheet" href="asseste/css/bootsrap.css">
+    <link rel="stylesheet" href="asseste/js/bootstrap.js">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <!--top banner-->
+  <div class="top-banner">
+    <div class="message-container" id="messageContainer">
+      <span>In-Stock: Delivery in 2-4 working days!</span>
+    </div>
+  </div>
+    
+<!--navbar-->
+    <header class="navbar">
+      <span class="toggle-menu-icon" id="toggleMenu">&#9776;</span>
+    
+        <div class="logo"><img src="asseste/img/main logo.avif" alt=""></div>
+    
+        <div class="nav-right">
+          <a href="#"><i class="fa-solid fa-user"></i></a>
+          <a href="#" class="search-icon-trigger"><i class="fa-solid fa-magnifying-glass"></i></a>
+          <a href="#" id="cartIcon"><i class="fa-solid fa-bag-shopping"></i></a>
+        </div>
+      </header>
+<!--mobile menu-->
+      <div class="mobile-menu" id="mobileMenu">
+        <div class="close-btn" id="closeMenu">&times;</div>
+  <ul class="menu-list">
+    <li><a href="#">HOME</a></li>
+    <li><a href="#">NEW ARRIVALS</a></li>
+    <li class="has-dropdown">
+      <a href="#">CASUAL PRET <span class="toggle">+</span></a>
+      <ul class="submenu">
+        <li><a href="#">Subitem 1</a></li>
+        <li><a href="#">Subitem 2</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <a href="#">WEDDING FESTIVE <span class="toggle">+</span></a>
+      <ul class="submenu">
+        <li><a href="#">Subitem 1</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <a href="#">BRIDALS <span class="toggle">+</span></a>
+      <ul class="submenu">
+        <li><a href="#">Subitem 1</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <a href="#">LUXURY FORMALS <span class="toggle">+</span></a>
+      <ul class="submenu">
+        <li><a href="#">Subitem 1</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <a href="#">RTW <span class="toggle">+</span></a>
+      <ul class="submenu">
+        <li><a href="#">Subitem 1</a></li>
+      </ul>
+    </li>
+    <li><a href="#" class="account-link">Account</a></li>
+  </ul>
+</div>
+<!--search container-->
+<div class="search-container">
+  <input type="text" id="searchInput" class="search-input" placeholder="Search products...">
+</div>
+<!--emptycart-->
+<section id="emptyCart" style="display: none;">
+  <div class="cart-popup">
+    <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" alt="Cart Empty">
+    <h3>Your cart is empty</h3>
+    <p>Add items to get started</p>
+  </div>
+  <div class="cart-overlay" id="cartOverlay"></div>
+</section>
+<!-- Cart Popup -->
+<section id="cartWithItems" style="display: none;">
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <div class="cart-popup">
+    <div class="cart-header">
+      <h2>CART</h2>
+      <span id="closeCart">&times;</span>
+    </div>
+
+    <div class="cart-item">
+      <img src="https://i.imgur.com/2nCt3Sbl.jpg" alt="Product">
+      <div class="item-details">
+        <h4>ALLURE</h4>
+        <p>S</p>
+        <p>Rs.198,000.00 PKR</p>
+        <div class="quantity-controls">
+          <button id="decrease">-</button>
+          <span id="quantity">1</span>
+          <button id="increase">+</button>
+        </div>
+        <a href="#" class="remove-item">REMOVE</a>
+      </div>
+    </div>
+
+    <div class="cart-footer">
+      <p>Shipping & taxes calculated at checkout</p>
+      <button class="checkout-btn">
+        CHECKOUT • Rs.198,000.00 PKR
+      </button>
+    </div>
+  </div>
+</section>
+
+<div id="results" class="results-container">
+  <!-- Product cards will appear here -->
+</div>
+<script>
+  const products = [
+    { name: "Triana – Unstitched Lawn", price: "Rs.7,616", image: "https://via.placeholder.com/200x250?text=Triana" },
+    { name: "Opal – Unstitched Lawn", price: "Rs.8,316", image: "https://via.placeholder.com/200x250?text=Opal" },
+    { name: "Evan – Unstitched Lawn", price: "Rs.7,616", image: "https://via.placeholder.com/200x250?text=Evan" },
+    { name: "Zarine – Unstitched Lawn", price: "Rs.6,916", image: "https://via.placeholder.com/200x250?text=Zarine" },
+  ];
+
+  const searchIcon = document.querySelector('.search-icon-trigger');
+  const searchContainer = document.querySelector('.search-container');
+  const resultsContainer = document.getElementById('results');
+  const searchInput = document.getElementById('searchInput');
+
+  // Toggle search bar visibility
+  searchIcon.addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent the link default behavior
+    if (searchContainer.style.display === 'block') {
+      searchContainer.style.display = 'none';
+      resultsContainer.style.display = 'none';
+      searchInput.value = '';
+      resultsContainer.innerHTML = '';
+    } else {
+      searchContainer.style.display = 'block';
+      searchInput.focus();
+    }
+  });
+
+  // Live Search
+  searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    resultsContainer.innerHTML = '';
+
+    if (query) {
+      resultsContainer.style.display = 'flex';
+      const filteredProducts = products.filter(product => product.name.toLowerCase().includes(query));
+
+      if(filteredProducts.length === 0){
+        resultsContainer.innerHTML = "<p>No products found.</p>";
+      } else {
+        filteredProducts.forEach(product => {
+          const card = document.createElement('div');
+          card.classList.add('card');
+
+          card.innerHTML = `
+            <img src="${product.image}" alt="${product.name}">
+            <div class="card-title">${product.name}</div>
+            <div class="card-price">${product.price}</div>
+          `;
+
+          resultsContainer.appendChild(card);
+        });
+      }
+    } else {
+      resultsContainer.style.display = 'none';
+    }
+  });
+</script>
+<!--hero-->
+<section class="hero">
+  <img src="asseste/img/website-banenr.webp" class="img-fluid" id="" alt="...">
+</section>
+<!--shop category-->
+<section class="shop-category">
+  <h2>Shop By Category</h2>
+
+  <div class="swiper mySwiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 1.avif" alt="Unstitched Lawn">
+        <p>Unstitched Lawn</p>
+      </div>
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 2.avif" alt="Girls Festive Wear">
+        <p>Girls Festive Wear</p>
+      </div>
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 3.avif" alt="Girls Casual Wear">
+        <p>Girls Casual Wear</p>
+      </div>
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 4.avif" alt="Basics">
+        <p>Basics</p>
+      </div>
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 5.avif" alt="Little Girls">
+        <p>Little Girls</p>
+      </div>
+      <div class="swiper-slide category-item">
+        <img src="asseste/img/category 6.avif" alt="Little Girls">
+        <p>Little Girls</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Swiper CSS + JS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  const swiper = new Swiper(".mySwiper", {
+  slidesPerView: 5,
+  spaceBetween: 20,
+  loop: true,
+  autoplay: {
+    delay: 2500, // 2.5 seconds delay
+    disableOnInteraction: false, // even after user touch, keep auto sliding
+  },
+  breakpoints: {
+    320: {
+      slidesPerView: 2,
+    },
+    640: {
+      slidesPerView: 3,
+    },
+    1024: {
+      slidesPerView: 5,
+    }
+  }
+});
+
+</script>
+<!--new in-->
+<section class="new-in">
+  <h2>New In</h2>
+  <div  class="product-showcase">
+  <div class="product-item">
+    <img src="asseste/img/new in 1.webp" alt="Eid ki Khushiyan">
+    <p>Eid ki Khushiyan</p>
+  </div>
+  <div class="product-item">
+    <img src="asseste/img/new in 2.webp" alt="Sorelle – Unstitched Lawn">
+    <p>Sorelle – Unstitched Lawn</p>
+  </div>
+  <div class="product-item">
+    <img src="asseste/img/new in 3.webp" alt="Jungle Jamboree SS'25">
+    <p>Jungle Jamboree SS'25</p>
+  </div>
+  <div class="product-item">
+    <img src="asseste/img/new in 4.webp" alt="Basics Drop">
+    <p>Basics Drop</p>
+  </div>
+</div>
+</section>
+<!--cards-->
+<section class="shop-category">
+  <h2>Linea - Luxury Lawn</h2>
+
+  <div class="product-slider">
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena1.webp" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena2.webp"alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena3.webp " alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena4.webp" alt="Product 2">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Shadab - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.8,880</span> Rs.7,104 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena5.webp " alt="Product 3">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Parwaz - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.7,980</span> Rs.7,664 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/lena6.webp " alt="Product 4">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Daneen - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,380</span> Rs.7,504 PKR</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const slider = document.querySelector('.product-slider');
+  const productCardWidth = 280; // card width + gap (approx)
+
+  let autoSlide;
+
+  function startAutoSlide() {
+    autoSlide = setInterval(() => {
+      if (slider.scrollLeft + slider.clientWidth >= slider.scrollWidth) {
+        // Agar end aa gaya to wapas shuru
+        slider.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        // Warna next card jitna slide
+        slider.scrollBy({ left: productCardWidth, behavior: 'smooth' });
+      }
+    }, 3000); // 3 seconds me 1 slide
+  }
+
+  function stopAutoSlide() {
+    clearInterval(autoSlide);
+  }
+
+  // Start auto slide
+  startAutoSlide();
+
+  // Pause on hover (optional, if you want)
+  slider.addEventListener('mouseenter', stopAutoSlide);
+  slider.addEventListener('mouseleave', startAutoSlide);
+
+  // Heart (wishlist) toggle
+  document.querySelectorAll('.wishlist-heart').forEach(heart => {
+    heart.addEventListener('click', () => {
+      if (heart.textContent === '♡') {
+        heart.textContent = '❤️';
+      } else {
+        heart.textContent = '♡';
+      }
+    });
+  });
+</script>
+
+
+<section class="shop-category">
+  <h2>Sorelle - Unstitched Lawn</h2>
+
+  <div class="product-slider">
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll1.avif" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll2.avif" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll3.avif" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll4.avif" alt="Product 2">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Shadab - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.8,880</span> Rs.7,104 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll5.avif" alt="Product 3">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Parwaz - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.7,980</span> Rs.7,664 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/scroll6.avif" alt="Product 4">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Daneen - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,380</span> Rs.7,504 PKR</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="shop-category">
+  <h2>Eid ki Khushiyan</h2>
+
+  <div class="product-slider">
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 1.webp" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 2.webp" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 3.webp" alt="Product 1">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Mehrunisa - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,680</span> Rs.7,744 PKR</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 4.webp" alt="Product 2">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Shadab - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.8,880</span> Rs.7,104 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 5.webp" alt="Product 3">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Parwaz - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.7,980</span> Rs.7,664 PKR</div>
+      </div>
+    </div>
+
+    <div class="product-card">
+      <div class="wishlist-heart">♡</div>
+      <img src="asseste/img/eid 6.webp" alt="Product 4">
+      <div class="quick-shop">Quick Shop</div>
+      <div class="sale-tag">-20%</div>
+      <div class="product-info">
+        <div class="product-title">Daneen - 3 Piece Lawn</div>
+        <div class="product-price"><span class="original-price">Rs.9,380</span> Rs.7,504 PKR</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-column">
+      <h3>Contact Us</h3>
+      <p>5.5 KM, Raiwind Road (Near Fatehbad Village)<br>Lahore, Pakistan.</p>
+      <p>📞 +92 (42) 111 627422, +923211224333</p>
+      <p>📧 help@mariab.ae</p>
+    </div>
+
+    <div class="footer-column">
+      <h3>Information</h3>
+      <ul>
+        <li><a href="#">Returns and Exchange</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="#">Track Your Order</a></li>
+        <li><a href="#">Blogs</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-column">
+      <h3>Customer Care</h3>
+      <ul>
+        <li><a href="#">About Maria.B</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Store Locator</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Terms and Conditions</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-column">
+      <h3>Sign Up For Our Newsletter</h3>
+      <div class="newsletter">
+        <input type="email" placeholder="Enter your email">
+        <button>Subscribe</button>
+      </div>
+      <div class="social-icons">
+        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>Developed by Shopistan - Powered by XStak</p>
+    <div class="payment-icons">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Visa.svg" alt="Visa" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Mastercard-logo.png" alt="Mastercard" />
+    </div>
+  </div>
+</footer>
+
+<!-- Font Awesome for social icons -->
+<script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+ 
+
+<!--top banner-->
+<script>
+  const messages = [
+    "In-Stock: Delivery in 2-4 working days!",
+    "Pre-Order: Delivery in 8-10 Working Days!",
+    "Contact Us: +92(0)42 111-119-482"
+  ];
+
+  let index = 0;
+  const container = document.getElementById("messageContainer");
+
+  function showMessage() {
+    container.innerHTML = `<span>${messages[index]}</span>`;
+    index = (index + 1) % messages.length;
+  }
+
+  showMessage(); // initial call
+  setInterval(showMessage, 4000); // change every 4 seconds
+</script>
+<!--nav menu-->
+<script>
+ const mobileMenu = document.getElementById('mobileMenu');
+const toggleMenuIcon = document.getElementById('toggleMenu');
+const closeMenuBtn = document.getElementById('closeMenu');
+
+// Toggle the mobile menu on hamburger icon click
+toggleMenuIcon.addEventListener('click', () => {
+  mobileMenu.classList.toggle('active');
+});
+
+// Close the menu when clicking the close button
+closeMenuBtn.addEventListener('click', () => {
+  mobileMenu.classList.remove('active');
+});
+
+// Dropdown toggle logic
+document.querySelectorAll('.has-dropdown').forEach(item => {
+  item.addEventListener('click', () => {
+    const submenu = item.querySelector('.submenu');
+    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+  });
+});
+
+</script>
+<script>
+  const cartIcon = document.getElementById('cartIcon');
+const cartPopup = document.getElementById('cartPopup');
+const cartOverlay = document.getElementById('cartOverlay');
+const closeCart = document.getElementById('closeCart');
+const increaseBtn = document.getElementById('increase');
+const decreaseBtn = document.getElementById('decrease');
+const quantitySpan = document.getElementById('quantity');
+
+let quantity = 1;
+
+// Open Cart
+cartIcon.addEventListener('click', function(e) {
+  e.preventDefault();
+  cartPopup.style.display = 'flex';
+  cartOverlay.style.display = 'block';
+});
+
+// Close Cart
+closeCart.addEventListener('click', function() {
+  cartPopup.style.display = 'none';
+  cartOverlay.style.display = 'none';
+});
+
+// Close when clicking outside
+cartOverlay.addEventListener('click', function() {
+  cartPopup.style.display = 'none';
+  cartOverlay.style.display = 'none';
+});
+
+// Increase Quantity
+increaseBtn.addEventListener('click', function() {
+  quantity++;
+  quantitySpan.textContent = quantity;
+});
+
+// Decrease Quantity
+decreaseBtn.addEventListener('click', function() {
+  if (quantity > 1) {
+    quantity--;
+    quantitySpan.textContent = quantity;
+  }
+});
+
+</script>
+
+  <script>
+
+  document.querySelectorAll('.dropdown-toggle').forEach(button => {
+  button.addEventListener('click', () => {
+    const dropdown = button.nextElementSibling;
+    dropdown.classList.toggle('open');
+
+    // Close other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      if (menu !== dropdown) {
+        menu.classList.remove('open');
+      }
+    });
+  });
+});
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown')) {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.remove('open');
+    });
+  }
+});
+    </script>
+  
+</body>
+</html>
